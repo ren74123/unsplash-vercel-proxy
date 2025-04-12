@@ -1,20 +1,7 @@
 export default async function handler(req, res) {
-  let list = [];
+  const { list } = req.body;
 
-  try {
-    const buffers = [];
-    for await (const chunk of req) {
-      buffers.push(chunk);
-    }
-    const data = Buffer.concat(buffers).toString();
-    const json = JSON.parse(data);
-
-    if (!Array.isArray(json.list)) {
-      throw new Error("Invalid list");
-    }
-
-    list = json.list;
-  } catch (e) {
+  if (!Array.isArray(list)) {
     return res.status(400).json({ error: "Invalid input" });
   }
 
@@ -31,6 +18,7 @@ export default async function handler(req, res) {
         const data = await apiRes.json();
         const img = data.results?.[0];
         if (!img) return null;
+
         return {
           name: item.name,
           image: img.urls.regular,
