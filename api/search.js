@@ -1,5 +1,5 @@
 export default async function handler(req, res) {
-  const list = req.body;
+  const list = req.body.list;
   const accessKey = process.env.UNSPLASH_ACCESS_KEY;
 
   if (!Array.isArray(list)) {
