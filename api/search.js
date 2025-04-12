@@ -20,7 +20,7 @@ export default async function handler(req, res) {
 
   const accessKey = process.env.UNSPLASH_ACCESS_KEY;
   if (!accessKey) {
-    return res.status(500).json({ error: "Missing UNSPLASH_ACCESS_KEY" });
+    return res.status(500).json({ error: "Missing access key" });
   }
 
   const results = await Promise.all(
