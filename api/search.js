@@ -1,16 +1,22 @@
-export const config = {
-  api: {
-    bodyParser: true,
-  },
-};
-
 export default async function handler(req, res) {
-  const list = req.body.list;
-  const accessKey = process.env.UNSPLASH_ACCESS_KEY;
+  const buffers = [];
+  for await (const chunk of req) {
+    buffers.push(chunk);
+  }
+  const data = Buffer.concat(buffers).toString();
+  let body;
+  try {
+    body = JSON.parse(data);
+  } catch (e) {
+    return res.status(400).json({ error: "Invalid JSON" });
+  }
 
+  const list = body.list;
   if (!Array.isArray(list)) {
     return res.status(400).json({ error: "Invalid input" });
   }
+
+  const accessKey = process.env.UNSPLASH_ACCESS_KEY;
 
   const results = await Promise.all(
     list.map(async (item) => {
@@ -20,7 +26,6 @@ export default async function handler(req, res) {
         const data = await apiRes.json();
         const img = data.results?.[0];
         if (!img) return null;
-
         return {
           name: item.name,
           image: img.urls.regular,
@@ -28,7 +33,7 @@ export default async function handler(req, res) {
           alt: img.alt_description,
           author: img.user?.name,
         };
-      } catch (e) {
+      } catch {
         return null;
       }
     })
