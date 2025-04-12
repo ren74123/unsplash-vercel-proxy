@@ -1,22 +1,27 @@
 export default async function handler(req, res) {
-  const buffers = [];
-  for await (const chunk of req) {
-    buffers.push(chunk);
-  }
-  const data = Buffer.concat(buffers).toString();
-  let body;
-  try {
-    body = JSON.parse(data);
-  } catch (e) {
-    return res.status(400).json({ error: "Invalid JSON" });
-  }
+  let list = [];
 
-  const list = body.list;
-  if (!Array.isArray(list)) {
+  try {
+    const buffers = [];
+    for await (const chunk of req) {
+      buffers.push(chunk);
+    }
+    const data = Buffer.concat(buffers).toString();
+    const json = JSON.parse(data);
+
+    if (!Array.isArray(json.list)) {
+      throw new Error("Invalid list");
+    }
+
+    list = json.list;
+  } catch (e) {
     return res.status(400).json({ error: "Invalid input" });
   }
 
   const accessKey = process.env.UNSPLASH_ACCESS_KEY;
+  if (!accessKey) {
+    return res.status(500).json({ error: "Missing UNSPLASH_ACCESS_KEY" });
+  }
 
   const results = await Promise.all(
     list.map(async (item) => {
